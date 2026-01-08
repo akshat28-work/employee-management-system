@@ -1,10 +1,10 @@
 package com.office.employeemanagementsystem.entity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -15,4 +15,8 @@ public class Department {
 
   @NotBlank(message = "Department name can not be null")
   private String name;
+
+  @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+  @JsonManagedReference
+  private List<Project> projects;
 }
