@@ -2,31 +2,35 @@ package com.office.employeemanagementsystem.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import org.apache.catalina.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Data
-public class Project {
+public class Employee {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @NotBlank(message = "Project title can not be empty")
-  private String projectTitle;
-
-  private String projectDescription;
+  @NotBlank(message = "Name can not be empty")
+  private String name;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_id", nullable = false)
   @JsonBackReference
   private Department department;
 
-  @ManyToMany(mappedBy = "projects")
-  @JsonIgnoreProperties("properties")
-  private List<Employee> employees;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "employee_projects",
+      joinColumns = @JoinColumn(name = "employee_id"),
+      inverseJoinColumns = @JoinColumn(name = "project_id")
+  )
+  @JsonIgnoreProperties("employees")
+  private List<Project> projects = new ArrayList<>();
 }

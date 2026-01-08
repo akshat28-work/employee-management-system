@@ -34,4 +34,11 @@ public class GlobalExceptionHandler {
     errors.put("details", ex.getMessage());
     return new ResponseEntity<>(errors, HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+  public ResponseEntity<Map<String, String>> handleJsonError(Exception ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put("message", "Invalid JSON format or missing required fields");
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  }
 }

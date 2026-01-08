@@ -1,4 +1,5 @@
 package com.office.employeemanagementsystem.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -19,4 +20,8 @@ public class Department {
   @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
   @JsonManagedReference
   private List<Project> projects;
+
+  @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+  @JsonIgnoreProperties("department")
+  private List<Employee> employees;
 }
