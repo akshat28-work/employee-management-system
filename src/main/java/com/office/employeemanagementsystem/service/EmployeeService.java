@@ -39,6 +39,9 @@ public class EmployeeService {
 
   @Transactional
   public Employee saveEmployee(Employee employee) {
+    if (employee.getName() == null || employee.getName().isBlank()) {
+      throw new RuntimeException("Validation Error: Name cannot be blank");
+    }
     Long empDeptId = employee.getDepartment().getId();
     Department department = departmentRepository.findById(empDeptId)
         .orElseThrow(() -> new RuntimeException("Department not found"));
@@ -98,6 +101,9 @@ public class EmployeeService {
   }
 
   public void deleteEmployeeById(Long id) {
+    if(!employeeRepository.findById(id).isPresent()) {
+      throw new RuntimeException("Employee not found with ID: " + id);
+    }
     employeeRepository.deleteById(id);
   }
 }
