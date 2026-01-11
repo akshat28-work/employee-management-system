@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -54,6 +55,7 @@ public class ProjectControllerIntegrationTest {
   }
 
   @Test
+  @WithMockUser
   public void createProjectTest() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
@@ -77,6 +79,7 @@ public class ProjectControllerIntegrationTest {
   }
 
   @Test
+  @WithMockUser
   public void getProjectByDepartmentIdTest() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
@@ -92,6 +95,7 @@ public class ProjectControllerIntegrationTest {
   }
 
   @Test
+  @WithMockUser
   public void updateProjectTest() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
@@ -118,6 +122,7 @@ public class ProjectControllerIntegrationTest {
   }
 
   @Test
+  @WithMockUser
   public void deleteProjectTest() throws Exception {
     Department department = new Department();
     department.setName("Department 1");

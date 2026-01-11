@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
 public class EmployeeControllerIntegrationTest {
@@ -52,11 +53,21 @@ public class EmployeeControllerIntegrationTest {
   @BeforeEach
   public void setup() {
     employeeRepository.deleteAll();
-    projectRepository.deleteAll();
     departmentRepository.deleteAll();
+    projectRepository.deleteAll();
+    Department department = new Department();
+    department.setName("Department 1");
+    Department savedDepartment = departmentRepository.save(department);
+    Employee employee = new Employee();
+    employee.setName("Test Admin");
+    employee.setDepartment(savedDepartment);
+    employee.setUsername("admin");
+    employee.setPassword("admin123");
+    employeeRepository.save(employee);
   }
 
   @Test
+  @WithMockUser
   public void createEmployeeTest() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
@@ -67,6 +78,8 @@ public class EmployeeControllerIntegrationTest {
     project = projectRepository.save(project);
     String employeeJson = "{"
         + "\"name\":\"John Doe\","
+        + "\"username\":\"johndoe\","
+        + "\"password\":\"johndoe123\","
         + "\"department\":{\"id\":" + department.getId() + "},"
         + "\"projects\":[{\"id\":" + project.getId() + "}]"
         + "}";
@@ -79,22 +92,26 @@ public class EmployeeControllerIntegrationTest {
   }
 
   @Test
+  @WithMockUser
   public void getAllEmployees() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
     Department savedDepartment = departmentRepository.save(department);
     Employee employee = new Employee();
     employee.setName("Employee 1");
+    employee.setUsername("employee1");
+    employee.setPassword("employee1123");
     employee.setDepartment(savedDepartment);
     Employee savedEmployee = employeeRepository.save(employee);
     mockMvc.perform(get("/employees")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(employee)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.[0].name").value(savedEmployee.getName()));
+        .andExpect(jsonPath("$.[1].name").value(savedEmployee.getName()));
   }
 
   @Test
+  @WithMockUser
   public void updateEmployee() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
@@ -105,10 +122,14 @@ public class EmployeeControllerIntegrationTest {
     Project savedProject = projectRepository.save(project);
     Employee employee = new Employee();
     employee.setName("Employee 1");
+    employee.setUsername("employee1");
+    employee.setPassword("employee1123");
     employee.setDepartment(savedDepartment);
     Employee savedEmployee = employeeRepository.save(employee);
     String updateJson = "{"
-        + "\"name\":\"John Updated\","
+        + "\"name\":\"Updated Employee\","
+        + "\"username\":\"employee1\","
+        + "\"password\":\"employee1123\","
         + "\"department\":{\"id\":" + savedDepartment.getId() + "},"
         + "\"projects\":[{\"id\":" + savedProject.getId() + "}]"
         + "}";
@@ -116,16 +137,19 @@ public class EmployeeControllerIntegrationTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(updateJson))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("John Updated"));
+        .andExpect(jsonPath("$.name").value("Updated Employee"));
   }
 
   @Test
+  @WithMockUser(username = "admin")
   public void deleteEmployee() throws Exception {
     Department department = new Department();
     department.setName("Department 1");
     Department savedDepartment = departmentRepository.save(department);
     Employee employee = new Employee();
     employee.setName("Employee 1");
+    employee.setUsername("employee1");
+    employee.setPassword("employee1123");
     employee.setDepartment(savedDepartment);
     Employee savedEmployee = employeeRepository.save(employee);
     mockMvc.perform(delete("/employees/"+savedEmployee.getId()))
