@@ -8,6 +8,7 @@ import com.office.employeemanagementsystem.repository.EmployeeRepository;
 import com.office.employeemanagementsystem.repository.ProjectRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -77,8 +78,12 @@ public class EmployeeService {
 
   @Transactional
   public Employee updateEmployee(Long id, Employee employee) {
+    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
     Employee existingEmployee = employeeRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Employee not found!"));
+    if(!existingEmployee.getUsername().equals(loggedInUser) && !loggedInUser.equals("admin")) {
+      throw new RuntimeException("Not Authorized to update Employee!");
+    }
     Long deptId = employee.getDepartment().getId();
     Department department = departmentRepository.findById(deptId)
         .orElseThrow(() -> new RuntimeException("Department not found!"));

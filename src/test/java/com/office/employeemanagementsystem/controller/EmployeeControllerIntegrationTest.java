@@ -111,7 +111,7 @@ public class EmployeeControllerIntegrationTest {
   }
 
   @Test
-  @WithMockUser
+  @WithMockUser(username = "employee1")
   public void updateEmployee() throws Exception {
     Department department = new Department();
     department.setName("Department 1");

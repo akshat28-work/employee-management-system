@@ -155,7 +155,7 @@ public class EmployeeManagementE2ETest {
         + "}";
     authHeaders.setContentType(MediaType.APPLICATION_JSON);
     HttpEntity<String> request = new HttpEntity<>(employeeJson, authHeaders);
-    ResponseEntity<Employee> employeeResponse = restTemplate.postForEntity(url+"/employees", request, Employee.class);
+    ResponseEntity<Employee> employeeResponse = restTemplate.exchange(url + "/employees", HttpMethod.POST, request, Employee.class);
     Long employeeId = employeeResponse.getBody().getId();
 
     String updatedJson = "{"
