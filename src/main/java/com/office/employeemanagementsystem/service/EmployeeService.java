@@ -8,6 +8,8 @@ import com.office.employeemanagementsystem.repository.EmployeeRepository;
 import com.office.employeemanagementsystem.repository.ProjectRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,9 @@ import java.util.List;
 public class EmployeeService {
   @Autowired
   private EmployeeRepository employeeRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   @Autowired
   private DepartmentRepository departmentRepository;
@@ -63,6 +68,9 @@ public class EmployeeService {
             " but Project " + project.getId() + " belongs to Dept " + projDeptIdVal);
       }
     }
+    if(employee.getPassword() != null) {
+      employee.setPassword(passwordEncoder.encode(employee.getPassword()));
+    }
     employee.setDepartment(department);
     employee.setProjects(dbProjects);
     return employeeRepository.save(employee);
@@ -70,8 +78,12 @@ public class EmployeeService {
 
   @Transactional
   public Employee updateEmployee(Long id, Employee employee) {
+    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
     Employee existingEmployee = employeeRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Employee not found!"));
+    if(!existingEmployee.getUsername().equals(loggedInUser) && !loggedInUser.equals("admin")) {
+      throw new RuntimeException("Not Authorized to update Employee!");
+    }
     Long deptId = employee.getDepartment().getId();
     Department department = departmentRepository.findById(deptId)
         .orElseThrow(() -> new RuntimeException("Department not found!"));
@@ -86,6 +98,12 @@ public class EmployeeService {
     }
     existingEmployee.setName(employee.getName());
     existingEmployee.setDepartment(department);
+    if (employee.getPassword() != null && !employee.getPassword().isBlank()) {
+      existingEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
+    }
+    if(employee.getUsername()!=null) {
+      existingEmployee.setUsername(employee.getUsername());
+    }
     existingEmployee.getProjects().clear();
     existingEmployee.getProjects().addAll(dbProjects);
     return employeeRepository.save(existingEmployee);

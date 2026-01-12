@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
 
@@ -251,6 +254,12 @@ public class EmployeeServiceTest {
 
   @Test
   public void updateEmployeeSuccess() {
+    String username = "Employee Name";
+    Authentication authentication = mock(Authentication.class);
+    SecurityContext securityContext = mock(SecurityContext.class);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn(username);
+    SecurityContextHolder.setContext(securityContext);
     Long employeeId = 3L;
     Long deptId = 2L;
     Long projId = 1L;
@@ -262,6 +271,7 @@ public class EmployeeServiceTest {
     Employee existingEmployee = new Employee();
     existingEmployee.setId(employeeId);
     existingEmployee.setName("Old Name");
+    existingEmployee.setUsername(username);
     existingEmployee.setProjects(new ArrayList<>());
     Employee updatedInfo = new Employee();
     updatedInfo.setName("New Name");
@@ -279,6 +289,11 @@ public class EmployeeServiceTest {
 
   @Test
   public void updateEmployeeFailure_NotFound() {
+    Authentication authentication = mock(Authentication.class);
+    SecurityContext securityContext = mock(SecurityContext.class);
+    when(securityContext.getAuthentication()).thenReturn(authentication);
+    when(authentication.getName()).thenReturn("admin");
+    SecurityContextHolder.setContext(securityContext);
     Long employeeId = 99L;
     when(employeeRepository.findById(employeeId)).thenReturn(Optional.empty());
     assertThrows(RuntimeException.class, () -> {
